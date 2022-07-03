@@ -153,7 +153,7 @@ export class GameScene extends Scene {
         this.playersGroup.children.iterate((player: Player) => {
           if (player.playerId === channel.userData.playerId) {
             //@ts-ignore
-            this.bullets.fireBullet(player.x, player.y - 20)
+            this.bullets.fireBullet(player.x, player.y, data.x, data.y)
           }
         })
       })

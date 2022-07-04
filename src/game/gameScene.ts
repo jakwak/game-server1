@@ -196,11 +196,9 @@ export class GameScene extends Scene {
 
     let bullets_visible = ''
     this.bullets.getChildren().forEach((bullet: Bullet, index: number) => {
-      if (bullet.visible) {
-        bullets_visible += `${index},${Math.round(bullet.x).toString(
-          36
-        )},${Math.round(bullet.y).toString(36)},`
-      }
+      bullets_visible += `${index},${Math.round(bullet.x).toString(
+        36
+      )},${Math.round(bullet.y).toString(36)},${bullet.visible ? '1' : '0'},`
     })
 
     if (updates.length > 0 || bullets_visible.length > 0) {

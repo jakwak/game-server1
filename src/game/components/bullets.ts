@@ -1,5 +1,7 @@
+import type { GameScene } from '../gameScene'
+
 export class Bullet extends Phaser.Physics.Arcade.Sprite {
-  constructor(scene, x, y) {
+  constructor(scene: GameScene, x: number, y: number) {
     super(scene, x, y, '')
     scene.add.existing(this)
     scene.physics.add.existing(this)
@@ -7,6 +9,7 @@ export class Bullet extends Phaser.Physics.Arcade.Sprite {
 
     scene.physics.add.collider(this, scene.stars)
     scene.physics.add.collider(this, scene.playersGroup)
+    scene.physics.add.collider(this, scene.platform)
   }
 
   fire(x1, y1, x2, y2) {
@@ -19,6 +22,11 @@ export class Bullet extends Phaser.Physics.Arcade.Sprite {
     this.setVisible(true)
 
     this.setVelocity(norVec.x * 700, norVec.y * 700)
+
+    this.scene.time.delayedCall(3000, () => {
+      this.setActive(false)
+      this.setVisible(false)
+    })
   }
 
   preUpdate(time, delta) {

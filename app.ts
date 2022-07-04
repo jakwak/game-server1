@@ -1,19 +1,28 @@
 // @ts-nocheck
 import express, { Request, Response } from 'express'
 import https from 'https'
+import http from 'http'
 import cors from 'cors'
 import Game from './src/game/game.js'
 import fs from 'fs'
-
-const sslOptions = {
-  ca: fs.readFileSync('/private/etc/ssl/ca_bundle.crt'),
-  key: fs.readFileSync('/private/etc/ssl/certs/private.key'),
-  cert: fs.readFileSync('/private/etc/ssl/certificate.crt'),
-}
+import ip from 'ip'
 
 const port = 1444
 const app = express()
-const server = https.createServer(sslOptions, app)
+
+const sslOptions =
+  ip.address() === '10.201.16.132'
+    ? ''
+    : {
+        ca: fs.readFileSync('/private/etc/ssl/ca_bundle.crt'),
+        key: fs.readFileSync('/private/etc/ssl/certs/private.key'),
+        cert: fs.readFileSync('/private/etc/ssl/certificate.crt'),
+      }
+
+const server =
+  ip.address() === '10.201.16.132'
+    ? http.createServer(app)
+    : https.createServer(sslOptions, app)
 const game = new Game(server)
 
 app.use(cors())

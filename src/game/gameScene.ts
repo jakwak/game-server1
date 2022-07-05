@@ -1,4 +1,4 @@
-import geckos from '@geckos.io/server'
+import geckos, { ServerChannel } from '@geckos.io/server'
 import type { GeckosServer } from '@geckos.io/server'
 import Game from './game.js'
 import pkg from 'phaser'
@@ -9,6 +9,7 @@ import { Bullet, Bullets } from './components/bullets.js'
 
 export class GameScene extends Scene {
   declare game: Game
+  channel: ServerChannel
   playerId: number
   io: GeckosServer
   playersGroup: pkg.GameObjects.Group
@@ -124,6 +125,8 @@ export class GameScene extends Scene {
     // }
 
     this.io.onConnection((channel) => {
+      this.channel = channel
+
       channel.onDisconnect(() => {
         console.log('Disconnect user ' + channel.userData.uname)
         this.playersGroup.children.each((player: Player) => {

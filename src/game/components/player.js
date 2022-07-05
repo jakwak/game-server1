@@ -26,6 +26,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     scene.physics.add.collider(this, scene.playersGroup)
 
     scene.events.on('update', this.update, this)
+
+    this.on('call', () => {
+      this.scene.channel.room.emit('collide', { x: this.x, y: this.y })
+    })
   }
 
   // setDummy(dummy) {

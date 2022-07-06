@@ -1,20 +1,24 @@
+import 'phaser'
+import { GameScene } from '../gameScene'
+
 export class Player extends Phaser.Physics.Arcade.Sprite {
-  constructor(scene, playerId, x = 200, y = 200, uname, dummy = false) {
+  declare scene: GameScene
+  prevX = -1
+  prevY = -1
+  dead = false
+  prevDead = false
+  playerId = null
+  uname = ''
+  move = { left: false, up: false, right: false, none: true }
+
+  constructor(scene: GameScene, playerId, x = 200, y = 200, uname) {
     super(scene, x, y, '')
     scene.add.existing(this)
     scene.physics.add.existing(this)
 
     this.scene = scene
-
-    this.prevX = -1
-    this.prevY = -1
-
-    this.dead = false
-    this.prevDead = false
-
     this.playerId = playerId
     this.uname = uname
-    this.move = {}
 
     // this.setDummy(dummy)
 
@@ -27,8 +31,15 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     scene.events.on('update', this.update, this)
 
-    this.on('call', () => {
-      this.scene.channel.room.emit('collide', { x: this.x, y: this.y })
+    this.on('hit', (pos) => {
+      this.scene.channel.room.emit('collide', {
+        x: Math.round(pos.x),
+        y: Math.round(pos.y),
+      })
+      // this.setAlpha(0.5)
+      // this.scene.time.delayedCall(3000, () => {
+      //   this.setAlpha(1)
+      // })
     })
   }
 
@@ -70,7 +81,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       left: int === 1 || int === 5,
       right: int === 2 || int === 6,
       up: int === 4 || int === 6 || int === 5,
-      none: int === 0
+      none: int === 0,
     }
 
     this.move = move
@@ -81,7 +92,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     else if (this.move.right) this.setVelocityX(160)
     else this.setVelocityX(0)
 
-    if (this.move.up && this.body.onFloor()) this.setVelocityY(-400)
+    if (this.move.up && this.body.blocked.down) this.setVelocityY(-400)
   }
 
   postUpdate() {
@@ -92,22 +103,19 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 }
 
 export class Star extends Phaser.Physics.Arcade.Sprite {
+  id: number
+  prevX = -1
+  prevY = -1
+  dead = false
+  prevDead = false
   constructor(scene, x, y, id) {
     super(scene, x, y, '')
     scene.add.existing(this)
     scene.physics.add.existing(this)
+    this.body.setSize(24, 22)
 
     this.scene = scene
-
     this.id = id
-
-    this.prevX = -1
-    this.prevY = -1
-
-    this.dead = false
-    this.prevDead = false
-
-    this.body.setSize(24, 22)
 
     scene.physics.add.collider(this, scene.platform)
   }

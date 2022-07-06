@@ -11,7 +11,7 @@ export class Bullet extends Phaser.Physics.Arcade.Sprite {
     this.scene = scene
 
     this.scene.physics.add.collider(this, scene.stars)
-    this.scene.physics.add.collider(
+    this.scene.physics.add.overlap(
       this,
       this.scene.playersGroup,
       this.collideToPlayer
@@ -20,10 +20,10 @@ export class Bullet extends Phaser.Physics.Arcade.Sprite {
   }
 
   collideToPlayer(bullet: this, player: Player) {
-    bullet.body.enable = false
+    bullet.disableBody(true, true)
     bullet.setActive(false)
     bullet.setVisible(false)
-    player.emit('call')
+    player.emit('hit', { x: bullet.x, y: bullet.y })
   }
 
   fire(x1, y1, x2, y2) {
@@ -32,11 +32,12 @@ export class Bullet extends Phaser.Physics.Arcade.Sprite {
 
     // x1 = norVec.x > 0 ? x1 + 50 : x1 - 50
 
-    this.body.reset(x1, y1 - 30)
-    this.body.enable = true
+    // this.body.reset(x1, y1 - 30)
+    this.enableBody(true, x1, y1 - 30, true, true)
+
     this.body.setCircle(11)
     this.setCollideWorldBounds(true)
-    // this.scene.physics.add.collider(this, this.scene.bullets)
+
     this.setBounce(0.5)
     this.setMass(50)
     this.setActive(true)
@@ -64,7 +65,7 @@ export class Bullets extends Phaser.Physics.Arcade.Group {
     super(scene.physics.world, scene)
 
     this.createMultiple({
-      frameQuantity: 100,
+      frameQuantity: 30,
       key: 'bullet',
       active: false,
       visible: false,

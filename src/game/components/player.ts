@@ -1,5 +1,5 @@
-import 'phaser'
 import { GameScene } from '../gameScene'
+import { Star } from './star'
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
   declare scene: GameScene
@@ -26,7 +26,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     this.setCollideWorldBounds(true)
     scene.physics.add.collider(this, scene.platform)
-    scene.physics.add.collider(this, scene.stars)
+    scene.physics.add.collider(this, scene.stars, collideToStar)
     scene.physics.add.collider(this, scene.playersGroup)
 
     scene.events.on('update', this.update, this)
@@ -41,6 +41,33 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       //   this.setAlpha(1)
       // })
     })
+
+    function collideToStar(player: Player, star: Star) {
+      if (star.body.immovable) return
+
+      star.body.reset(-1, -1)
+
+      star.setImmovable(true)
+      star.setVelocity(0)
+      star.setGravity(0)
+
+      star.setActive(false)
+      star.setVisible(false)
+
+      scene.channel.room.emit('collide', {
+        x: Math.round(player.x),
+        y: Math.round(player.y),
+      })
+
+      scene.events.emit('add_star', { x: player.x, y: player.y })
+
+      // gameObject.emit('hit', { x: bullet.x, y: bullet.y })
+
+      // scene.channel.room.emit('collide', {
+      //   x: Math.round(bullet.x),
+      //   y: Math.round(bullet.y),
+      // })
+    }
   }
 
   // setDummy(dummy) {
@@ -99,24 +126,5 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.prevX = this.x
     this.prevY = this.y
     this.prevDead = this.dead
-  }
-}
-
-export class Star extends Phaser.Physics.Arcade.Sprite {
-  id: number
-  prevX = -1
-  prevY = -1
-  dead = false
-  prevDead = false
-  constructor(scene, x, y, id) {
-    super(scene, x, y, '')
-    scene.add.existing(this)
-    scene.physics.add.existing(this)
-    this.body.setSize(24, 22)
-
-    this.scene = scene
-    this.id = id
-
-    scene.physics.add.collider(this, scene.platform)
   }
 }

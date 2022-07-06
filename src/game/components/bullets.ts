@@ -1,8 +1,8 @@
 import type { GameScene } from '../gameScene'
 import type { Player } from './player.js'
+import { Star } from './star'
 
 export class Bullet extends Phaser.Physics.Arcade.Sprite {
-  declare scene: GameScene
   constructor(scene: GameScene, x: number, y: number) {
     super(scene, x, y, '')
     scene.add.existing(this)
@@ -10,20 +10,20 @@ export class Bullet extends Phaser.Physics.Arcade.Sprite {
 
     this.scene = scene
 
-    this.scene.physics.add.collider(this, scene.stars)
-    this.scene.physics.add.overlap(
-      this,
-      this.scene.playersGroup,
-      this.collideToPlayer
-    )
+    this.scene.physics.add.overlap(this, scene.stars, collideToPlayer)
+    this.scene.physics.add.overlap(this, scene.playersGroup, collideToPlayer)
     this.scene.physics.add.collider(this, scene.platform)
-  }
 
-  collideToPlayer(bullet: this, player: Player) {
-    bullet.disableBody(true, true)
-    bullet.setActive(false)
-    bullet.setVisible(false)
-    player.emit('hit', { x: bullet.x, y: bullet.y })
+    function collideToPlayer(bullet: Bullet, gameObject) {
+      bullet.disableBody(true, true)
+      bullet.setActive(false)
+      bullet.setVisible(false)
+      gameObject.emit('hit', { x: bullet.x, y: bullet.y })
+      // scene.channel.room.emit('collide', {
+      //   x: Math.round(bullet.x),
+      //   y: Math.round(bullet.y),
+      // })
+    }
   }
 
   fire(x1, y1, x2, y2) {
@@ -33,7 +33,8 @@ export class Bullet extends Phaser.Physics.Arcade.Sprite {
     // x1 = norVec.x > 0 ? x1 + 50 : x1 - 50
 
     // this.body.reset(x1, y1 - 30)
-    this.enableBody(true, x1, y1 - 30, true, true)
+    if (x1 < x2) this.enableBody(true, x1 + 30, y1, true, true)
+    else this.enableBody(true, x1 - 30, y1, true, true)
 
     this.body.setCircle(11)
     this.setCollideWorldBounds(true)

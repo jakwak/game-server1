@@ -4,7 +4,8 @@ import Game from './game.js'
 import pkg from 'phaser'
 const { Scene } = pkg
 
-import { Player, Star } from './components/player.js'
+import { Player } from './components/player.js'
+import { Star } from './components/star.js'
 import { Bullet, Bullets } from './components/bullets.js'
 
 export class GameScene extends Scene {
@@ -96,7 +97,19 @@ export class GameScene extends Scene {
     })
 
     map.getObjectLayer('Items').objects.forEach((star, index) => {
-      this.stars.add(new Star(this, star.x, star.y, 'star' + index))
+      this.stars.add(new Star(this, star.x, star.y, index))
+    })
+
+    this.events.on('add_star', (pos) => {
+      let star = this.stars.getFirstDead(
+        false,
+        Phaser.Math.Between(pos.x - 200 < 50 ? 50 : pos.x - 200, pos.x + 200),
+        Phaser.Math.Between(50, this.scale.height - 50),
+        'star'
+      ) as Star
+
+      star.setActive(true)
+      star.setVisible(true)
     })
   }
 
@@ -107,22 +120,6 @@ export class GameScene extends Scene {
 
     this.playersGroup = this.add.group()
     this.bullets = new Bullets(this)
-
-    // const addDummy = (name) => {
-    //   if (this.playersGroup.countActive(true) > 300) return
-
-    //   let x = Phaser.Math.RND.integerInRange(10, 890)
-    //   let y = Phaser.Math.RND.integerInRange(0, 400)
-    //   let id = Math.random()
-
-    //   let dead = this.playersGroup.getFirstDead()
-    //   if (dead) {
-    //     dead.revive(id, name, true)
-    //     dead.setPosition(x, y)
-    //   } else {
-    //     this.playersGroup.add(new Player(this, id, x, y, name, true))
-    //   }
-    // }
 
     this.io.onConnection((channel) => {
       this.channel = channel
@@ -183,7 +180,7 @@ export class GameScene extends Scene {
   }
 
   update() {
-    let updates = ''
+    let playerUpdates = ''
     this.playersGroup.children.iterate((player: Player) => {
       let x = Math.abs(player.x - player.prevX) > 0.5
       let y = Math.abs(player.y - player.prevY) > 0.5
@@ -191,21 +188,36 @@ export class GameScene extends Scene {
 
       if (x || y || dead) {
         if (dead || !player.dead) {
-          updates += this.prepareToSync(player)
+          playerUpdates += this.prepareToSync(player)
         }
       }
       player.postUpdate()
     })
 
-    let bullets_visible = ''
-    this.bullets.getChildren().forEach((bullet: Bullet, index: number) => {
-      bullets_visible += `${index},${Math.round(bullet.x).toString(
-        36
-      )},${Math.round(bullet.y).toString(36)},${bullet.visible ? '1' : '0'},`
+    let bulletUpdates = ''
+    this.bullets.getChildren().forEach((bullet: Bullet, id: number) => {
+      bulletUpdates += `${id},${Math.round(bullet.x).toString(36)},${Math.round(
+        bullet.y
+      ).toString(36)},${bullet.visible ? '1' : '0'},`
     })
 
-    if (updates.length > 0 || bullets_visible.length > 0) {
-      this.io.room().emit('updateObjects', [updates, bullets_visible])
-    }
+    let starUpdates = ''
+    this.stars.getChildren().forEach((star: Star) => {
+      starUpdates += star.active
+        ? `${star.id},${Math.round(star.x).toString(36)},${Math.round(
+            star.y
+          ).toString(36)},${star.visible ? '1' : '0'},`
+        : ''
+    })
+
+    // if (
+    //   playerUpdates.length > 0 ||
+    //   bulletUpdates.length > 0 ||
+    //   starUpdates.length > 0
+    // ) {
+    this.io
+      .room()
+      .emit('updateObjects', [playerUpdates, bulletUpdates, starUpdates])
+    // }
   }
 }

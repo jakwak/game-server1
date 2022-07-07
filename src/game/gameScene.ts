@@ -149,7 +149,7 @@ export class GameScene extends Scene {
         })
       })
 
-      channel.on('pointerdown', (data) => {
+      channel.on('shoot', (data) => {
         this.playersGroup.children.iterate((player: Player) => {
           if (player.playerId === channel.userData.playerId) {
             //@ts-ignore

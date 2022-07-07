@@ -82,14 +82,15 @@ export class GameScene extends Scene {
     const map = this.make.tilemap({ key: 'map' })
     const tileset = map.addTilesetImage('platformPack_tilesheet', 'tiles')
 
-    this.platform = map.createLayer('Platform', tileset, 0, 0)
-    this.platform.setCollisionByExclusion([-1], true)
-
-    this.platform.forEachTile((tile) => {
-      if (tile.index === 75) {
-        tile.setCollision(false, false, true, false, true)
-      }
-    })
+    this.platform = map
+      .createLayer('Platform', tileset, 0, 0)
+      .setName('platform')
+      .setCollisionByExclusion([-1], true)
+      .forEachTile((tile) => {
+        if (tile.index === 75) {
+          tile.setCollision(false, false, true, false, true)
+        }
+      })
 
     this.stars = this.physics.add.group({
       allowGravity: false,
@@ -104,13 +105,81 @@ export class GameScene extends Scene {
       let star = this.stars.getFirstDead(
         false,
         Phaser.Math.Between(pos.x - 200 < 50 ? 50 : pos.x - 200, pos.x + 200),
-        Phaser.Math.Between(50, this.scale.height - 50),
+        Phaser.Math.Between(50, this.scale.height),
         'star'
       ) as Star
 
       star.setActive(true)
       star.setVisible(true)
     })
+  }
+
+  initCollider(channel) {
+    this.physics.add.collider(
+      this.bullets.getChildren(),
+      this.bullets.getChildren(),
+      collideHandler1
+    )
+    this.physics.add.collider(
+      this.platform,
+      this.bullets.getChildren(),
+      collideHandler2
+    )
+
+    function collideHandler1(g1: Phaser.Physics.Arcade.Sprite, g2) {
+      if (g1.active && g2.active) {
+        g1.disableBody(true, true)
+        g1.setActive(false)
+        g1.setVisible(false)
+
+        g2.disableBody(true, true)
+        g2.setActive(false)
+        g2.setVisible(false)
+
+        channel.room.emit('collide', {
+          x: Math.round(g1.body.x),
+          y: Math.round(g1.body.y),
+        })
+      }
+    }
+
+    function collideHandler2(g1: Phaser.Physics.Arcade.Sprite, g2) {
+      if (g1.name === 'bullet' && g1.active) {
+        g1.disableBody(true, true)
+        g1.setActive(false)
+        g1.setVisible(false)
+
+        channel.room.emit('collide', {
+          x: Math.round(g1.body.x),
+          y: Math.round(g1.body.y),
+        })
+      }
+    }
+
+    this.physics.add.overlap(
+      this.bullets.getChildren(),
+      this.stars,
+      collideHandler
+    )
+    this.physics.add.overlap(
+      this.bullets.getChildren(),
+      this.playersGroup,
+      collideHandler
+    )
+
+    function collideHandler(bullet: Bullet, gameObject) {
+      bullet.disableBody(true, true)
+      bullet.setActive(false)
+      bullet.setVisible(false)
+
+      if (gameObject.name === 'star' || gameObject.name === 'player')
+        gameObject.emit('hit', { x: bullet.x, y: bullet.y })
+
+      // scene.channel.room.emit('collide', {
+      //   x: Math.round(bullet.x),
+      //   y: Math.round(bullet.y),
+      // })
+    }
   }
 
   create() {
@@ -123,6 +192,8 @@ export class GameScene extends Scene {
 
     this.io.onConnection((channel) => {
       this.channel = channel
+
+      this.initCollider(channel)
 
       channel.onDisconnect(() => {
         console.log('Disconnect user ' + channel.userData.uname)

@@ -10,20 +10,7 @@ export class Bullet extends Phaser.Physics.Arcade.Sprite {
 
     this.scene = scene
 
-    this.scene.physics.add.overlap(this, scene.stars, collideToPlayer)
-    this.scene.physics.add.overlap(this, scene.playersGroup, collideToPlayer)
-    this.scene.physics.add.collider(this, scene.platform)
-
-    function collideToPlayer(bullet: Bullet, gameObject) {
-      bullet.disableBody(true, true)
-      bullet.setActive(false)
-      bullet.setVisible(false)
-      gameObject.emit('hit', { x: bullet.x, y: bullet.y })
-      // scene.channel.room.emit('collide', {
-      //   x: Math.round(bullet.x),
-      //   y: Math.round(bullet.y),
-      // })
-    }
+    this.setName('bullet')
   }
 
   fire(x1, y1, x2, y2) {

@@ -20,7 +20,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.playerId = playerId
     this.uname = uname
 
-    // this.setDummy(dummy)
+    this.setName('player')
 
     this.body.setSize(24, 48)
 

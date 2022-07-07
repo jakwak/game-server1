@@ -18,6 +18,8 @@ export class Star extends Phaser.Physics.Arcade.Sprite {
     this.scene = scene
     this.id = id
 
+    this.setName('star')
+
     scene.physics.add.collider(this, scene.platform)
 
     this.on('hit', (pos) => {

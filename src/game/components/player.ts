@@ -10,7 +10,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   playerId = null
   uname = ''
   move = { left: false, up: false, right: false, none: true }
-
+  hp = 60
   constructor(scene: GameScene, playerId, x = 200, y = 200, uname) {
     super(scene, x, y, '')
     scene.add.existing(this)
@@ -32,6 +32,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     scene.events.on('update', this.update, this)
 
     this.on('hit', (pos) => {
+      this.hp -= 10
       this.scene.channel.room.emit('collide', {
         x: Math.round(pos.x),
         y: Math.round(pos.y),

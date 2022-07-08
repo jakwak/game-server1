@@ -44,7 +44,7 @@ export class GameScene extends Scene {
       36
     )},${Math.round(player.y).toString(36)},${player.dead === true ? 1 : 0},${
       player.uname
-    },`
+    },${player.hp},`
   }
 
   getState() {

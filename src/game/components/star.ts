@@ -13,8 +13,6 @@ export class Star extends Phaser.Physics.Arcade.Sprite {
     scene.physics.add.existing(this)
     this.body.setSize(24, 22)
 
-    this.setGravityY(0)
-
     this.scene = scene
     this.id = id
 

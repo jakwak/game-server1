@@ -20,8 +20,9 @@ export class Bullet extends Phaser.Physics.Arcade.Sprite {
     // x1 = norVec.x > 0 ? x1 + 50 : x1 - 50
 
     // this.body.reset(x1, y1 - 30)
-    if (x1 < x2) this.enableBody(true, x1 + 30, y1, true, true)
-    else this.enableBody(true, x1 - 30, y1, true, true)
+    if (x1 - x2 < -50) this.enableBody(true, x1 + 30, y1, true, true)
+    else if (x1 - x2 > 50) this.enableBody(true, x1 - 30, y1, true, true)
+    else this.enableBody(true, x1, y1 - 50, true, true)
 
     this.body.setCircle(11)
     this.setCollideWorldBounds(true)

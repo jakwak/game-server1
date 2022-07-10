@@ -44,7 +44,7 @@ export class GameScene extends Scene {
       36
     )},${Math.round(player.y).toString(36)},${player.dead === true ? 1 : 0},${
       player.uname
-    },${player.hp},`
+    },`
   }
 
   getState() {
@@ -105,7 +105,7 @@ export class GameScene extends Scene {
       let star = this.stars.getFirstDead(
         false,
         Phaser.Math.Between(pos.x - 200 < 50 ? 50 : pos.x - 200, pos.x + 200),
-        Phaser.Math.Between(50, this.scale.height),
+        Phaser.Math.Between(50, 450),
         'star'
       ) as Star
 
@@ -126,7 +126,7 @@ export class GameScene extends Scene {
       collideHandler2
     )
 
-    function collideHandler1(g1: Phaser.Physics.Arcade.Sprite, g2) {
+    function collideHandler1(g1: Bullet, g2: Bullet) {
       if (g1.active && g2.active) {
         g1.disableBody(true, true)
         g1.setActive(false)
@@ -137,8 +137,8 @@ export class GameScene extends Scene {
         g2.setVisible(false)
 
         channel.room.emit('collide', {
-          x: Math.round(g1.body.x),
-          y: Math.round(g1.body.y),
+          x: Math.round(g1.x),
+          y: Math.round(g1.y),
         })
       }
     }
@@ -174,11 +174,6 @@ export class GameScene extends Scene {
 
       if (gameObject.name === 'star' || gameObject.name === 'player')
         gameObject.emit('hit', { x: bullet.x, y: bullet.y })
-
-      // scene.channel.room.emit('collide', {
-      //   x: Math.round(bullet.x),
-      //   y: Math.round(bullet.y),
-      // })
     }
   }
 
@@ -244,6 +239,14 @@ export class GameScene extends Scene {
             )
           )
         }
+      })
+
+      channel.on('getHps', () => {
+        let hps = ''
+        this.playersGroup.children.iterate((player: Player) => {
+          if (!player.dead) hps += `${player.playerId},${player.hp},`
+        })
+        channel.emit('getHps', hps)
       })
 
       channel.emit('ready')

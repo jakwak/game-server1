@@ -10,7 +10,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   playerId = null
   uname = ''
   move = { left: false, up: false, right: false, none: true }
-  hp = 60
+  hp = 100
   constructor(scene: GameScene, playerId, x = 200, y = 200, uname) {
     super(scene, x, y, '')
     scene.add.existing(this)
@@ -36,11 +36,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.scene.channel.room.emit('collide', {
         x: Math.round(pos.x),
         y: Math.round(pos.y),
+        pid: this.playerId,
+        v: -10,
       })
-      // this.setAlpha(0.5)
-      // this.scene.time.delayedCall(3000, () => {
-      //   this.setAlpha(1)
-      // })
     })
 
     function collideToStar(player: Player, star: Star) {
@@ -58,16 +56,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       scene.channel.room.emit('collide', {
         x: Math.round(player.x),
         y: Math.round(player.y),
+        pid: player.playerId,
+        v: 5,
       })
 
       scene.events.emit('add_star', { x: player.x, y: player.y })
-
-      // gameObject.emit('hit', { x: bullet.x, y: bullet.y })
-
-      // scene.channel.room.emit('collide', {
-      //   x: Math.round(bullet.x),
-      //   y: Math.round(bullet.y),
-      // })
     }
   }
 
@@ -84,22 +77,19 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   // }
 
   kill() {
+    this.setVelocity(0)
     this.dead = true
     this.setActive(false)
-    this.body.enable = false
+    this.disableBody()
   }
 
-  revive(playerId, uname, dummy) {
+  revive(playerId, uname) {
     this.playerId = playerId
     this.uname = uname
     this.dead = false
     this.setActive(true)
-    this.body.enable = true
-    // this.setDummy(dummy)
-    this.setVelocity(0)
-
-    this.x = 20
-    this.y = 20
+    this.enableBody(true, 50, 50, true, true)
+    this.hp = 100
   }
 
   setMove(data) {

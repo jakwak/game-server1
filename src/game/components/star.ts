@@ -20,7 +20,7 @@ export class Star extends Phaser.Physics.Arcade.Sprite {
 
     scene.physics.add.collider(this, scene.platform)
 
-    this.on('hit', (pos) => {
+    this.on('hit-bullet', (pos) => {
       this.setImmovable(false)
       this.setAccelerationY(200)
       this.setCollideWorldBounds(true)

@@ -10,7 +10,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   playerId = null
   uname = ''
   move = { left: false, up: false, right: false, none: true }
-  hp = 100
+  hp: number
   constructor(scene: GameScene, playerId, x = 200, y = 200, uname) {
     super(scene, x, y, '')
     scene.add.existing(this)
@@ -19,6 +19,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.scene = scene
     this.playerId = playerId
     this.uname = uname
+    this.hp = 100
 
     this.setName('player')
 
@@ -31,34 +32,50 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     scene.events.on('update', this.update, this)
 
-    this.on('hit', (pos) => {
-      this.hp -= 10
+    this.on('hit-bullet', (pos) => {
+      this.hp =
+        this.hp - this.scene.data.get('hp-') < 0
+          ? 0
+          : this.hp - this.scene.data.get('hp-')
+      //@ts-ignore
+      if (this.hp <= 90) this.body.allowGravity = false
       this.scene.channel.room.emit('collide', {
         x: Math.round(pos.x),
         y: Math.round(pos.y),
         pid: this.playerId,
-        v: -10,
+        v: this.hp,
+      })
+    })
+
+    this.on('hit-star', (pos) => {
+      this.hp =
+        this.hp + scene.data.get('hp+') > 100
+          ? 100
+          : this.hp + scene.data.get('hp+')
+      scene.channel.room.emit('collide', {
+        x: Math.round(pos.x),
+        y: Math.round(pos.y),
+        pid: this.playerId,
+        v: this.hp,
       })
     })
 
     function collideToStar(player: Player, star: Star) {
       if (star.body.immovable) return
 
-      star.body.reset(-1, -1)
+      if (star.name === 'star') {
+        star.body.reset(-1, -1)
 
-      star.setImmovable(true)
-      star.setVelocity(0)
-      star.setGravity(0)
+        star.setImmovable(true)
+        star.setVelocity(0)
+        star.setGravity(0)
 
-      star.setActive(false)
-      star.setVisible(false)
+        star.setActive(false)
+        star.setVisible(false)
+      }
 
-      scene.channel.room.emit('collide', {
-        x: Math.round(player.x),
-        y: Math.round(player.y),
-        pid: player.playerId,
-        v: 5,
-      })
+      if (player.name === 'player')
+        player.emit('hit-star', { x: star.x, y: star.y })
 
       scene.events.emit('add_star', { x: player.x, y: player.y })
     }
@@ -89,6 +106,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.dead = false
     this.setActive(true)
     this.enableBody(true, 50, 50, true, true)
+    //@ts-ignore
+    this.body.allowGravity = true
     this.hp = 100
   }
 
@@ -106,11 +125,14 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   update() {
+    // if (this.body.allowGravity) {
     if (this.move.left) this.setVelocityX(-160)
     else if (this.move.right) this.setVelocityX(160)
     else this.setVelocityX(0)
 
-    if (this.move.up && this.body.blocked.down) this.setVelocityY(-400)
+    if (this.move.up) this.setVelocityY(-400)
+    // if (this.move.up && this.body.blocked.down) this.setVelocityY(-400)
+    // }
   }
 
   postUpdate() {

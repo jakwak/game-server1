@@ -76,6 +76,9 @@ export class GameScene extends Scene {
       'map',
       publicPath + 'tmx-test/tilemaps/test2.json'
     )
+
+    this.data.set('hp+', 5)
+    this.data.set('hp-', 10)
   }
 
   createPlatform() {
@@ -173,7 +176,7 @@ export class GameScene extends Scene {
       bullet.setVisible(false)
 
       if (gameObject.name === 'star' || gameObject.name === 'player')
-        gameObject.emit('hit', { x: bullet.x, y: bullet.y })
+        gameObject.emit('hit-bullet', { x: bullet.x, y: bullet.y })
     }
   }
 

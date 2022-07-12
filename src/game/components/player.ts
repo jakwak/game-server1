@@ -37,8 +37,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.hp - this.scene.data.get('hp-') < 0
           ? 0
           : this.hp - this.scene.data.get('hp-')
-      //@ts-ignore
-      if (this.hp <= 90) this.body.allowGravity = false
+
       this.scene.channel.room.emit('collide', {
         x: Math.round(pos.x),
         y: Math.round(pos.y),
@@ -125,14 +124,15 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   update() {
-    // if (this.body.allowGravity) {
     if (this.move.left) this.setVelocityX(-160)
     else if (this.move.right) this.setVelocityX(160)
     else this.setVelocityX(0)
 
-    if (this.move.up) this.setVelocityY(-400)
-    // if (this.move.up && this.body.blocked.down) this.setVelocityY(-400)
-    // }
+    if (this.hp <= 0) {
+      if (this.move.up) this.setVelocityY(-100)
+    } else {
+      if (this.move.up && this.body.blocked.down) this.setVelocityY(-400)
+    }
   }
 
   postUpdate() {

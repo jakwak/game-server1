@@ -218,10 +218,9 @@ export class GameScene extends Scene {
         })
       })
 
-      channel.on('shoot', (data) => {
+      channel.on('shoot', (data: { x: number; y: number }) => {
         this.playersGroup.children.iterate((player: Player) => {
           if (player.playerId === channel.userData.playerId) {
-            //@ts-ignore
             this.bullets.fireBullet(player.x, player.y, data.x, data.y)
           }
         })
@@ -294,7 +293,7 @@ export class GameScene extends Scene {
     // ) {
     this.io
       .room()
-      .emit('updateObjects', [playerUpdates, bulletUpdates, starUpdates])
+      .emit('updatePlayers', [playerUpdates, bulletUpdates, starUpdates])
     // }
   }
 }
